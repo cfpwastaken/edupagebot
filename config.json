@@ -1,0 +1,21 @@
+{
+    "messages": {
+        "sucess": ":white_check_mark:",
+        "error": ":x:",
+        "warning": ":warning:",
+        "info": ":information_source:",
+        "question": ":question:",
+
+        "logged_in": "Logged in!",
+        "refreshed": "Refreshed Edupage!",
+
+        "new_assignment": "@everyone New assignment!",
+        "new_message": "@everyone New message!"
+    },
+
+    "client_id": "917427664153878600",
+    "guild_id": "887709964049735740",
+    
+    "assignment_channel": "923553605401853965",
+    "message_channel": "923553605401853965"
+}

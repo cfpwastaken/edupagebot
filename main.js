@@ -6,31 +6,17 @@ const { Routes } = require('discord-api-types/v9');
 const { Edupage } = require("edupage-api");
 let edupage = new Edupage();
 const fs = require("fs");
+const config = require("./config.json");
 
-const SUCCESS = ":white_check_mark:";
-const ERROR = ":x:";
+const SUCCESS = config.messages.sucess;
+const ERROR = config.messages.error;
+const WARN = config.messages.warning;
+const INFO = config.messages.info;
+const QUESTION = config.messages.question;
 
 async function ep_login() {
     await edupage.login(require("./token.json").ep_user, require("./token.json").ep_pass);
 }
-
-const commands = [{
-  name: 'ping',
-  description: 'Pong!'
-}, {
-    name: "login-edupage",
-    description: "Edupage relogin"
-}, {
-    name: "refresh-edupage",
-    description: "Edupage refresh"
-}, {
-    name: "timetable",
-    description: "Get timetable"
-}];
-
-const rest = new REST({ version: '9' }).setToken(TOKEN);
-const CLIENT_ID = "917427664153878600";
-const GUILD_ID = "887709964049735740";
 
 // sleep function with promises
 function sleep(ms) {
@@ -39,15 +25,6 @@ function sleep(ms) {
 
 (async () => {
   try {
-    // console.log('Started refreshing application (/) commands.');
-
-    // await rest.put(
-    //   Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-    //   { body: commands },
-    // );
-
-    // console.log('Successfully reloaded application (/) commands.');
-    
     try {
         await ep_login();
     } catch(e) {
@@ -62,7 +39,7 @@ function sleep(ms) {
             let assignment = assignments[i];
             let done = require("./doneid.json");
             if(!done.assignments.includes(assignment.id)) {
-                let channel = bot.channels.cache.get("923553605401853965");
+                let channel = bot.channels.cache.get(config.assignment_channel);
                 if(channel) {
                     console.log("[!] Posting assignment: " + assignment.id);
                     let embed = new Discord.MessageEmbed()
@@ -70,7 +47,7 @@ function sleep(ms) {
                         .setDescription(assignment.subject.name + " " + assignment.cardsCount + " cards, " + assignment.answerCardsCount + " answer cards")
                         .setColor(0x00ff00)
                         .setFooter("Edupage")
-                    await channel.send({content: "@everyone", embeds: [embed]});
+                    await channel.send({content: config.messages.new_assignment, embeds: [embed]});
                     done.assignments.push(assignment.id);
                     require("fs").writeFileSync("./doneid.json", JSON.stringify(done));
                 }
@@ -82,7 +59,7 @@ function sleep(ms) {
             if(msg.recipientUserString == "*") {
                 let done = require("./doneid.json");
                 if(!done.msgs.includes(msg.id)) {
-                    let channel = bot.channels.cache.get("923553605401853965");
+                    let channel = bot.channels.cache.get(config.message_channel);
                     if(channel) {
                         console.log("Posting message: " + msg.id);
                         let embed = new Discord.MessageEmbed()
@@ -90,7 +67,7 @@ function sleep(ms) {
                             .setDescription(msg.text)
                             .setColor(msg.isImportant ? "RED" : "WHITE")
                             .setFooter("Edupage")
-                        await channel.send({content: "@everyone", embeds: [embed]});
+                        await channel.send({content: config.messages.new_message, embeds: [embed]});
                         done.msgs.push(msg.id);
                         require("fs").writeFileSync("./doneid.json", JSON.stringify(done));
                     }
@@ -120,14 +97,14 @@ bot.on('interactionCreate', async interaction => {
     } else if(interaction.commandName === "login-edupage") {
         try {
             await ep_login();
-            await interaction.reply(`${SUCCESS} Angemeldet!`);
+            await interaction.reply(`${SUCCESS} ${config.messages.logged_in}`);
         } catch(e) {
             await interaction.reply(`${ERROR} ${e}`);
         }
     } else if(interaction.commandName === "refresh-edupage") {
         try {
             await edupage.refresh();
-            await interaction.reply(`${SUCCESS} Aktualisiert!`);
+            await interaction.reply(`${SUCCESS} ${config.messages.refreshed}`);
         } catch(e) {
             await interaction.reply(`${ERROR} ${e}`);
         }
