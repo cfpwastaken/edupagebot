@@ -88,6 +88,7 @@ function sleep(ms) {
         console.log("Refreshed edupage");
     }
 })();
+const sharp = require("sharp")
 
 bot.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
@@ -109,6 +110,7 @@ bot.on('interactionCreate', async interaction => {
             await interaction.reply(`${ERROR} ${e}`);
         }
     } else if(interaction.commandName === "timetable") {
+        await interaction.deferReply(); // Give us some more time to reply
         let timetable = fs.readFileSync("./timetable.svg", {encoding: "utf8"});
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -120,21 +122,66 @@ bot.on('interactionCreate', async interaction => {
         const tttoday = await edupage.getTimetableForDate(today);
         const tttomorrow = await edupage.getTimetableForDate(tomorrow);
 
-        timetable.replace("PH-D1", yesterday.getDay());
-        timetable.replace("PH-D2", today.getDay());
-        timetable.replace("PH-D3", tomorrow.getDay());
-
         const tables = [ttyesterday, tttoday, tttomorrow];
         for (let i = 1; i < tables.length + 1; i++) {
             const table = tables[i - 1];
             const lessons = table.lessons;
-            for (let j = 1; j < 10; j++) {
-                const lesson = lessons[i];
-                timetable.replace("PH-D" + i + "-S" + j + "-S", lesson.subject.name);
-                timetable.replace("PH-D" + i + "-S" + j + "-T", lesson.teachers[0].name);
-                timetable.replace("PH-D" + i + "-S" + j + "-R", lesson.classrooms[0].name);
+            if(table.lessons.length == 0) {
+                console.log("EMPTY LESSONS");
+                //continue;
             }
+            const periods = [];
+            for (let j = 1; j < 11; j++) {
+                const lesson = lessons[j - 1];
+                if(lesson == undefined) {
+                    // timetable = timetable.replace("PH-D" + i + "-S" + j + "-S", "");
+                    // timetable = timetable.replace("PH-D" + i + "-S" + j + "-T", "");
+                    // timetable = timetable.replace("PH-D" + i + "-S" + j + "-R", "");
+                    continue;
+                }
+                console.log("Replacing");
+                periods.push(lesson.period.id);
+                timetable = timetable.replace("PH-D" + i + "-S" + lesson.period.id + "-S", lesson.subject.short);
+                timetable = timetable.replace("PH-D" + i + "-S" + lesson.period.id + "-T", lesson.teachers[0].short);
+                timetable = timetable.replace("PH-D" + i + "-S" + lesson.period.id + "-R", lesson.classrooms[0].name.replace("Klassenraum", "").replace("Classroom", "")); // PLEASE PULL REQUEST MORE
+            }
+            // for every missing period, replace it with an empty string
+            for (let j = 1; j < 11; j++) {
+                if(!periods.includes(j)) {
+                    timetable = timetable.replace("PH-D" + i + "-S" + j + "-S", "");
+                    timetable = timetable.replace("PH-D" + i + "-S" + j + "-T", "");
+                    timetable = timetable.replace("PH-D" + i + "-S" + j + "-R", "");
+                }
+            }
+
+            // Convert the timetable to png
+
+            sharp("tt.svg")
+                .png()
+                .on("finish", () => {
+                    console.log("FINISH")
+                })
+                .toFile("tt.png")
+                .then(function(info) {
+                    console.log(info)
+                    // send tt.png to discord
+                    const embed = new Discord.MessageEmbed()
+                        .setTitle("Stundenplan")
+                        .setImage("attachment://tt.png")
+                        .setColor(0x00ff00)
+                        .setFooter("Edupage")
+                    //                              \/ Zero width space here!!
+                    interaction.editReply({content: "​", embeds: [embed], files: ["tt.png"]});
+                })
+                .catch(function(err) {
+                    console.log(err)
+                    interaction.editReply({content: `${ERROR} ${err}`});
+                })
         }
+        timetable = timetable.replace("PH-D1", yesterday.getDay());
+        timetable = timetable.replace("PH-D2", today.getDay());
+        timetable = timetable.replace("PH-D3", tomorrow.getDay());
+
 
         fs.writeFileSync("tt.svg", timetable);
     }
