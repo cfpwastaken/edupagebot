@@ -57,6 +57,7 @@ function sleep(ms) {
         const timeline = edupage.timeline;
         for(let i = 0; i < timeline.length; i++) {
             let msg = timeline[i];
+            console.log(msg.text.split("\n")[0], msg.recipientUserString, msgAllowed.includes(msg.recipientUserString));
             if(msgAllowed.includes(msg.recipientUserString)) {
                 let done = require("./doneid.json");
                 if(!done.msgs.includes(msg.id)) {
