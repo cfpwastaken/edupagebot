@@ -59,7 +59,6 @@ function sleep(ms) {
             if(msg.recipientUserString == "*" || msg.recipientUserString.startsWith("StudentOnly")) {
                 let done = require("./doneid.json");
                 if(!done.msgs.includes(msg.id)) {
-                    console.log("NOT DONE");
                     let channel = bot.channels.cache.get(config.message_channel);
                     if(channel) {
                         console.log("Posting message: " + msg.id);
