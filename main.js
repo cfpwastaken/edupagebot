@@ -60,7 +60,7 @@ function sleep(ms) {
             let allow = false;
             if(msgAllowed.equal.includes(msg.recipientUserString)) allow = true;
             else {
-                for(const include of msgAllowed.includes) {
+                for(const include of msgAllowed.include) {
                     if(msg.recipientUserString.includes(include)) { allow = true; break; }
                 }
             }
