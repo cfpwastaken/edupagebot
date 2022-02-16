@@ -1,1 +1,4 @@
-["*", "StudentOnly*"]
+{
+    "equal": ["*", "StudentOnly*"],
+    "include": ["Trieda"]
+}

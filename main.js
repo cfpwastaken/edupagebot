@@ -57,8 +57,15 @@ function sleep(ms) {
         const timeline = edupage.timeline;
         for(let i = 0; i < timeline.length; i++) {
             let msg = timeline[i];
-            console.log(msg.text.split("\n")[0], msg.recipientUserString, msgAllowed.includes(msg.recipientUserString));
-            if(msgAllowed.includes(msg.recipientUserString)) {
+            let allow = false;
+            if(msgAllowed.equal.includes(msg.recipientUserString)) allow = true;
+            else {
+                for(const include of msgAllowed.includes) {
+                    if(msg.recipientUserString.includes(include)) { allow = true; break; }
+                }
+            }
+            console.log(msg.text.split("\n")[0], msg.recipientUserString, allow);
+            if(allow) {
                 let done = require("./doneid.json");
                 if(!done.msgs.includes(msg.id)) {
                     let channel = bot.channels.cache.get(config.message_channel);
