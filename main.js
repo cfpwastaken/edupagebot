@@ -74,19 +74,12 @@ function sleep(ms) {
                 }
             }
         }
-        await sleep(1000 * 60 * 25);
+        await sleep(1000 * 60 * 1);
+        await edupage.refresh();
     }
   } catch (error) {
     console.error(error);
   }
-})();
-
-(async () => {
-    while(true) {
-        await sleep(1000 * 60 * 30);
-        await edupage.refresh();
-        console.log("Refreshed edupage");
-    }
 })();
 const sharp = require("sharp")
 
