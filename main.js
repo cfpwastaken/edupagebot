@@ -7,7 +7,6 @@ const { Edupage } = require("edupage-api");
 let edupage = new Edupage();
 const fs = require("fs");
 const config = require("./config.json");
-const msgAllowed = require("./msg-allowed-recips.json");
 
 const SUCCESS = config.messages.sucess;
 const ERROR = config.messages.error;
@@ -57,8 +56,7 @@ function sleep(ms) {
         const timeline = edupage.timeline;
         for(let i = 0; i < timeline.length; i++) {
             let msg = timeline[i];
-            console.log("NEW MESSAGE", msg.recipientUserString, msgAllowed.includes(msg.recipientUserString));
-            if(msgAllowed.includes(msg.recipientUserString)) {
+            if(msg.recipientUserString == "*" || msg.recipientUserString.startsWith("StudentOnly")) {
                 let done = require("./doneid.json");
                 if(!done.msgs.includes(msg.id)) {
                     console.log("NOT DONE");
